@@ -22,6 +22,7 @@
       <HintPath>$(Sts2Path)\mods\BaseLib.dll</HintPath>
     </Reference>
 
+    <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="0.0.1" />
     <AdditionalFiles Include="ModTemplate\localization\**\*.json"/>
   </ItemGroup>
 
@@ -40,14 +41,9 @@
     <Content Include=".gitignore" />
     <Content Include="mod_manifest.json" />
     <Content Include="project.godot"/>
-    <Content Include="images\**" />
     <Content Include="ModTemplate\**" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="images\**\**" />
-  </ItemGroup>
-
     <ItemGroup>
       <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3">
         <PrivateAssets>all</PrivateAssets>
@@ -59,14 +55,13 @@
     <Message Text="Copying .dll to mods folder." Importance="high" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(Sts2Path)\mods\" />
   </Target>
-  
-  <Target Name="GodotPublish" AfterTargets="Publish">
+
+  <Target Name="GodotPublish" BeforeTargets="Publish">
     <Message Text="Exporting Godot .pck..." Importance="high" />
     <Exec Command="$(GodotPath) --headless --export-pack &quot;Windows Desktop&quot; &quot;$(PublishDir)\$(MSBuildProjectName).pck&quot;" ContinueOnError="WarnAndContinue" />
   </Target>
-  <Target Name="CopyToModsFolder" AfterTargets="Publish;GodotPublish">
-    <Message Text="Copying .pck and .dll to mods folder." Importance="high" />
+  <Target Name="CopyToModsFolder" AfterTargets="Publish">
+    <Message Text="Copying .pck to mods folder." Importance="high" />
     <Copy SourceFiles="$(PublishDir)\$(MSBuildProjectName).pck" DestinationFolder="$(Sts2Path)\mods\" />
-    <Copy SourceFiles="$(PublishDir)\$(MSBuildProjectName).dll" DestinationFolder="$(Sts2Path)\mods\" />
   </Target>
 </Project>
