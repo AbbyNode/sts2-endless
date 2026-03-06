@@ -1,0 +1,9 @@
+.godot/
+/android/
+.git/
+.idea/
+.vs/
+publish/
+.editorconfig
+*.uid
+*.user
