@@ -11,11 +11,18 @@
     "sourceName": "ModTemplate",
     "sources": [
         {
-            "exclude":[
-                ".git/**",
-                ".godot/**",
-                ".idea/**",
-                "README.md"
+            "modifiers":[
+                {
+                    "condition": true,
+                    "exclude":[
+                        ".git/**",
+                        ".godot/**",
+                        ".idea/**",
+                        "Properties/**",
+                        "nuget.config",
+                        "README.md"
+                    ]
+                }
             ]
         }
     ],
