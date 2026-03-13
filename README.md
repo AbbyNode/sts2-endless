@@ -1,2 +1,5 @@
-<!-- Provide an overview of what your template package does and how to get started.
-Consider previewing the README before uploading (https://learn.microsoft.com/en-us/nuget/nuget-org/package-readme-on-nuget-org#preview-your-readme). -->
+Contains 2 templates.
+
+Slay the Spire 2 Mod - Sets up an empty mod with BaseLib as a dependency. If you don't need it, remove it from the csproj and mod manifest json.
+
+Slay the Spire 2 Character - Sets up a character mod.
