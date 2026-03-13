@@ -1,12 +1,5 @@
-.godot/
-bin/
-/android/
-.git/
+dotnet pack in this folder
 .idea/
 .vs/
-publish/
-Properties/
-packages/
-.editorconfig
-*cs.uid
-*.user
+bin/
+obj/

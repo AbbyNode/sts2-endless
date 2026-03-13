@@ -1,0 +1,54 @@
+{
+    "author": "Alchyr",
+    "name": "Slay the Spire 2 Character",
+    "description": "A Slay the Spire 2 character mod relying on BaseLib",
+    "identity": "Alchyr.Sts2CharMod",
+    "shortName": "alchyrsts2charmod",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "CharMod",
+    "sources": [
+        {
+            "modifiers":[
+                {
+                    "condition": true,
+                    "exclude":[
+                        ".git/**",
+                        ".godot/**",
+                        ".idea/**",
+                        "Properties/**",
+                        "nuget.config",
+                        "README.md"
+                    ]
+                }
+            ]
+        }
+    ],
+    "symbols": {
+        "ModAuthor":{
+            "type": "parameter",
+            "dataType": "string",
+            "isRequired": "true",
+            "replaces": "{ModAuthor}",
+            "defaultValue": "Author"
+        },
+        "NullableChecks":{
+            "type": "parameter",
+            "dataType":"choice",
+            "choices": [
+                {
+                    "choice": "enable",
+                    "description": "More strict handling of possibly null values."
+                },
+                {
+                    "choice": "disable",
+                    "description": ""
+                }
+            ],
+            "replaces": "{NullableChecks}",
+            "defaultValue": "enable"
+        }
+    }
+}

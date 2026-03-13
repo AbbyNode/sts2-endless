@@ -1,3 +1,2 @@
-A template for an empty Slay the Spire 2 mod with BaseLib as a dependency.
-
-See the [wiki](https://github.com/Alchyr/ModTemplate-StS2/wiki) to get started.
+<!-- Provide an overview of what your template package does and how to get started.
+Consider previewing the README before uploading (https://learn.microsoft.com/en-us/nuget/nuget-org/package-readme-on-nuget-org#preview-your-readme). -->
