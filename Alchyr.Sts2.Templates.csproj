@@ -3,13 +3,13 @@
     <!-- The package metadata. Fill in the properties marked as TODO below -->
     <!-- Follow the instructions on https://learn.microsoft.com/en-us/nuget/create-packages/package-authoring-best-practices -->
     <PackageId>Alchyr.Sts2.Templates</PackageId>
-    <PackageVersion>2.0.0</PackageVersion>
+    <PackageVersion>2.0.1</PackageVersion>
     <Title>Sts2 Mod Templates</Title>
     <Authors>Alchyr</Authors>
     <Description>Templates to use when creating a Slay the Spire 2 mod</Description>
     <PackageTags>dotnet-new;templates;</PackageTags>
     <PackageProjectUrl>https://github.com/Alchyr/ModTemplate-StS2/</PackageProjectUrl>
-    <PackageReleaseNotes>new mod structure, add character template</PackageReleaseNotes>
+    <PackageReleaseNotes>update character template filetemplates</PackageReleaseNotes>
     
     <!-- Keep package type as 'Template' to show the package as a template package on nuget.org and make your template available in dotnet new search.-->
     <PackageType>Template</PackageType>
