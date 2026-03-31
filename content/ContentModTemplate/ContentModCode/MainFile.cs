@@ -2,7 +2,7 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Modding;
 
-namespace ContentMod;
+namespace ContentMod.ContentModCode;
 
 [ModInitializer(nameof(Initialize))]
 public partial class MainFile : Node

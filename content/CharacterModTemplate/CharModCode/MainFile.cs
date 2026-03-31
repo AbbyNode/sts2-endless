@@ -2,12 +2,12 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Modding;
 
-namespace ModTemplate;
+namespace CharMod.CharModCode;
 
 [ModInitializer(nameof(Initialize))]
 public partial class MainFile : Node
 {
-    public const string ModId = "ModTemplate"; //At the moment, this is used only for the Logger and harmony names.
+    public const string ModId = "CharMod"; //Used for resource filepath
 
     public static MegaCrit.Sts2.Core.Logging.Logger Logger { get; } = new(ModId, MegaCrit.Sts2.Core.Logging.LogType.Generic);
 
