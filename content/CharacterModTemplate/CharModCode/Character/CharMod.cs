@@ -1,4 +1,5 @@
 ﻿using BaseLib.Abstracts;
+using BaseLib.Utils.NodeFactories;
 using CharMod.CharModCode.Extensions;
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Characters;
