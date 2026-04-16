@@ -61,7 +61,9 @@ jobs:
 
       - name: Get mod version
         id: version
-        run: echo "tag=$(jq -r '.version' EndlessMod.json)" >> $GITHUB_OUTPUT
+        run: |
+          TAG=$(jq -re '.version' EndlessMod.json)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -69,4 +71,5 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: EndlessMod ${{ steps.version.outputs.tag }}
           generate_release_notes: true
+          make_latest: true
           files: dist/EndlessMod.zip
