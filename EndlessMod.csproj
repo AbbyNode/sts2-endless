@@ -27,6 +27,11 @@
         </Reference>
     </ItemGroup>
 
+    <ItemGroup Condition="!Exists('$(Sts2DataDir)/sts2.dll')">
+        <!-- Use reference-only stubs when the game is not installed (e.g. CI) -->
+        <PackageReference Include="BSchneppe.Sts2.ReferenceAssemblies" Version="0.99.1" PrivateAssets="All"/>
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Alchyr.Sts2.BaseLib" Version="*" PrivateAssets="All"/>
         <PackageReference Include="Krafs.Publicizer" Version="2.3.0" PrivateAssets="All"/>
