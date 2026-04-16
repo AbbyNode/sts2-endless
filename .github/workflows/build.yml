@@ -36,17 +36,13 @@ jobs:
           chmod +x "$GODOT_BIN"
           echo "GODOT_BIN=$(realpath "$GODOT_BIN")" >> $GITHUB_ENV
 
-      - name: Create Sts2DataDir placeholder
-        run: mkdir -p /tmp/sts2data
-
       - name: Restore NuGet packages
-        run: dotnet restore /p:Sts2DataDir=/tmp/sts2data
+        run: dotnet restore
 
       - name: Publish mod
         run: |
           mkdir -p /tmp/mods/EndlessMod
           dotnet publish -c Release \
-            /p:Sts2DataDir=/tmp/sts2data \
             /p:ModsPath=/tmp/mods/ \
             /p:GodotPath="$GODOT_BIN"
 
