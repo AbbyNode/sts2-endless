@@ -1,4 +1,7 @@
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Rewards;
+using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using EndlessMod.EndlessModCode.UI;
 
@@ -77,6 +80,14 @@ internal static class EndlessLoopPatches
     //  Shared loop logic
     // -----------------------------------------------------------------------
 
+    // Gold awarded to each player at the end of the last act.
+    // Mirrors the approximate amount given by a mid-game act boss.
+    private const int BossGoldMin = 95;
+    private const int BossGoldMax = 105;
+
+    // Number of card choices offered in the boss card-reward screen.
+    private const int BossCardChoiceCount = 3;
+
     private static async Task DoEndlessLoop(RunManager runManager)
     {
         if (_isLooping)
@@ -86,6 +97,10 @@ internal static class EndlessLoopPatches
         try
         {
             EndlessState.IncrementIteration();
+
+            // Offer boss-style rewards (relic + card choice + gold) to every
+            // player before the act transition so progression feels seamless.
+            await OfferBossRewards(runManager);
 
             // Regenerate fresh encounters for all acts so the second (and
             // subsequent) passes feel different from the first.
@@ -108,6 +123,51 @@ internal static class EndlessLoopPatches
         finally
         {
             _isLooping = false;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    //  Boss reward helper
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Presents boss-style rewards (relic, card choice, and gold) to each
+    /// player.  This mirrors the reward screen shown after the act 2 boss so
+    /// the transition to the next loop feels rewarding rather than abrupt.
+    ///
+    /// Errors are logged and swallowed so that a failure here never prevents
+    /// the run from looping back.
+    /// </summary>
+    private static async Task OfferBossRewards(RunManager runManager)
+    {
+        var state = runManager.DebugOnlyGetState();
+        if (state == null)
+            return;
+
+        foreach (var player in state.Players)
+        {
+            try
+            {
+                var rewards = new List<Reward>
+                {
+                    new RelicReward(player),
+                    new CardReward(
+                        CardCreationOptions.ForRoom(player, RoomType.Boss),
+                        BossCardChoiceCount,
+                        player),
+                    new GoldReward(BossGoldMin, BossGoldMax, player),
+                };
+
+                await RewardsCmd.OfferCustom(player, rewards);
+
+                MainFile.Logger.Info(
+                    $"[EndlessMod] Boss rewards offered to player {player}.");
+            }
+            catch (Exception ex)
+            {
+                MainFile.Logger.Error(
+                    $"[EndlessMod] Failed to offer boss rewards to player {player}: {ex}");
+            }
         }
     }
 }
