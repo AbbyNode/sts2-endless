@@ -166,7 +166,7 @@ internal static class EndlessLoopPatches
             catch (Exception ex)
             {
                 MainFile.Logger.Error(
-                    $"[EndlessMod] Failed to offer boss rewards to player {player}: {ex}");
+                    $"[EndlessMod] Failed to offer boss rewards: {ex.Message}");
             }
         }
     }
