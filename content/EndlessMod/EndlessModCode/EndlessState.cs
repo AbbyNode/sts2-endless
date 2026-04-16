@@ -20,15 +20,6 @@ public static class EndlessState
         MainFile.Logger.Info($"[EndlessMod] Entering iteration {IterationCount}.");
     }
 
-    /// <summary>
-    /// Set the iteration counter to a specific value.
-    /// Used to synchronise the value from a remote peer.
-    /// </summary>
-    public static void SetIteration(int value)
-    {
-        IterationCount = value;
-    }
-
     /// <summary>Reset back to the first iteration (called when a new run starts).</summary>
     public static void Reset()
     {
