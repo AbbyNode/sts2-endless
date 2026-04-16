@@ -14,6 +14,26 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump minor version
+        id: bump_version
+        run: |
+          CURRENT=$(jq -re '.version' EndlessMod.json)
+          VERSION=${CURRENT#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          NEW_MINOR=$((MINOR + 1))
+          NEW_VERSION="v${MAJOR}.${NEW_MINOR}.0"
+          jq --arg v "$NEW_VERSION" '.version = $v' EndlessMod.json > tmp.json && mv tmp.json EndlessMod.json
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add EndlessMod.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: bump minor version to ${NEW_VERSION} [skip ci]"
+            git push
+          fi
+          echo "tag=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
@@ -59,17 +79,11 @@ jobs:
           name: EndlessMod
           path: dist/EndlessMod.zip
 
-      - name: Get mod version
-        id: version
-        run: |
-          TAG=$(jq -re '.version' EndlessMod.json)
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: EndlessMod ${{ steps.version.outputs.tag }}
+          tag_name: ${{ steps.bump_version.outputs.tag }}
+          name: EndlessMod ${{ steps.bump_version.outputs.tag }}
           generate_release_notes: true
           make_latest: true
           files: dist/EndlessMod.zip
