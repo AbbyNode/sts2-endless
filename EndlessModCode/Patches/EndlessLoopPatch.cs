@@ -206,6 +206,12 @@ internal static class EndlessLoopPatches
         _isLooping = true;
         try
         {
+            // Record which bosses the player just fought (before rooms are
+            // regenerated) so we can avoid repeating them in act 1.
+            var state = runManager.DebugOnlyGetState();
+            if (state != null)
+                EndlessState.RecordBossesFromActs(state.Acts);
+
             EndlessState.IncrementIteration();
 
             // Offer boss-style rewards (relic + card choice + gold) to every
@@ -215,6 +221,10 @@ internal static class EndlessLoopPatches
             // Regenerate fresh encounters for all acts so the second (and
             // subsequent) passes feel different from the first.
             runManager.GenerateRooms();
+
+            // Ensure act 1's boss is not one that was recently fought.
+            if (state != null)
+                EnsureAct1BossIsNew(state);
 
             // Return to act 0.  EnterAct handles the transition animation,
             // map generation, and act-change synchronisation in multiplayer.
@@ -234,6 +244,49 @@ internal static class EndlessLoopPatches
         {
             _isLooping = false;
         }
+    }
+
+    /// <summary>
+    /// After rooms are regenerated, checks whether the randomly selected act 1
+    /// boss was one of the recently fought bosses.  If so, replaces it with a
+    /// random pick from the eligible pool (all act 1 bosses not in the recent
+    /// list).  If no eligible boss exists the generated one is kept as-is.
+    /// </summary>
+    private static void EnsureAct1BossIsNew(RunState state)
+    {
+        if (state.Acts.Count == 0)
+            return;
+
+        var act1 = state.Acts[0];
+
+        // If the randomly chosen boss is already fresh, nothing to do.
+        if (!EndlessState.IsRecentBoss(act1.BossEncounter.Id))
+        {
+            MainFile.Logger.Info(
+                $"[EndlessMod] Act 1 boss {act1.BossEncounter.Id} is already fresh – keeping it.");
+            return;
+        }
+
+        // Build a candidate list: all possible act 1 bosses minus recent ones.
+        var candidates = act1.AllBossEncounters
+            .Where(e => !EndlessState.IsRecentBoss(e.Id))
+            .ToList();
+
+        if (candidates.Count == 0)
+        {
+            // Every possible act 1 boss was recently fought – keep the
+            // generated one rather than crashing or looping indefinitely.
+            MainFile.Logger.Info(
+                "[EndlessMod] All act 1 bosses were recently fought; keeping generated boss.");
+            return;
+        }
+
+        var chosen = candidates[Random.Shared.Next(candidates.Count)];
+        var previousBossId = act1.BossEncounter.Id;
+        act1.SetBossEncounter(chosen);
+
+        MainFile.Logger.Info(
+            $"[EndlessMod] Act 1 boss replaced: {previousBossId} was recently fought; using {chosen.Id} instead.");
     }
 
     // -----------------------------------------------------------------------
