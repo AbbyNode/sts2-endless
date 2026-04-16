@@ -3,7 +3,7 @@
   "name": "Endless Runs",
   "author": "EndlessMod",
   "description": "Allows endless runs in Slay the Spire 2. After completing the last act, the run loops back to act 1 with scaled enemy HP. Fully multiplayer compatible.",
-  "version": "v1.5.0",
+  "version": "v1.6.0",
   "has_pck": true,
   "has_dll": true,
   "dependencies": [
