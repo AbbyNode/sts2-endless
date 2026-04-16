@@ -1,0 +1,64 @@
+name: Build and Zip Mod
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Download Godot 4.5.1 mono
+        run: |
+          wget -q "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_x86_64.zip" -O godot.zip
+          unzip -q godot.zip -d godot_dir
+          GODOT_BIN=$(find godot_dir -type f -name "*.x86_64" | head -1)
+          chmod +x "$GODOT_BIN"
+          echo "GODOT_BIN=$(realpath "$GODOT_BIN")" >> $GITHUB_ENV
+
+      - name: Create Sts2DataDir placeholder
+        run: mkdir -p /tmp/sts2data
+
+      - name: Restore NuGet packages
+        run: dotnet restore /p:Sts2DataDir=/tmp/sts2data
+
+      - name: Publish mod
+        run: |
+          mkdir -p /tmp/mods/EndlessMod
+          dotnet publish -c Release \
+            /p:Sts2DataDir=/tmp/sts2data \
+            /p:ModsPath=/tmp/mods/ \
+            /p:GodotPath="$GODOT_BIN"
+
+      - name: Create zip archive
+        run: |
+          mkdir -p dist
+          cp -r /tmp/mods/EndlessMod dist/
+          cd dist
+          zip -r EndlessMod.zip EndlessMod/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EndlessMod
+          path: dist/EndlessMod.zip
