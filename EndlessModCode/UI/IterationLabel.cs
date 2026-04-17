@@ -1,18 +1,21 @@
 using Godot;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Runs;
+// Note: the STS2 reference assembly uses lowercase 'sts2' in this namespace.
+using MegaCrit.sts2.Core.Nodes.TopBar;
 
 namespace EndlessMod.EndlessModCode.UI;
 
 /// <summary>
-/// Manages the on-screen iteration indicator displayed during a run.
+/// Manages the on-screen loop indicator displayed during a run.
 ///
-/// The label is injected as a child of <c>NRun.Instance</c> (the root node
-/// of the in-run scene) each time a run starts, and removed when a new run
-/// is created.
+/// The label is injected as a child of <c>NTopBarFloorIcon</c> so that it
+/// appears directly next to the floor number in the format
+/// <c>{Floor_Number} (loop: {Iteration})</c>.  It falls back to being a
+/// child of <c>NRun.Instance</c> when the floor icon is not yet available.
 ///
-/// Displayed text:  "Iteration: 1"  on the first pass,
-///                  "Iteration: 2"  on the second pass, etc.
+/// Displayed text:  "(loop: 1)"  on the first pass,
+///                  "(loop: 2)"  on the second pass, etc.
 /// </summary>
 public static class IterationLabel
 {
@@ -38,11 +41,11 @@ public static class IterationLabel
         if (!EndlessModConfig.ShowIterationCount)
             return;
 
-        var runRoot = NRun.Instance;
-        if (runRoot == null)
+        var floorIcon = GetFloorIcon();
+        if (floorIcon == null)
         {
             MainFile.Logger.Warn(
-                "[EndlessMod] NRun.Instance is null – iteration label cannot be shown yet.");
+                "[EndlessMod] NTopBarFloorIcon not available yet – will retry on next room.");
             return;
         }
 
@@ -50,22 +53,20 @@ public static class IterationLabel
         {
             Name = LabelNodeName,
             Text = FormatLabel(),
-            // Top-right area of the 1920×1080 canvas.
-            Position = new Vector2(1600f, 20f),
         };
 
-        // Readable font size.
-        _label.AddThemeFontSizeOverride("font_size", 32);
-
-        // White text with a dark outline for visibility over any background.
+        // Match the visual style used by the top bar (white with dark outline).
+        _label.AddThemeFontSizeOverride("font_size", 20);
         _label.AddThemeColorOverride("font_color", new Color(1f, 1f, 1f));
         _label.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f));
         _label.AddThemeConstantOverride("outline_size", 4);
 
         // AddChild must happen on the main thread; CallDeferred is safe here.
-        runRoot.CallDeferred(Node.MethodName.AddChild, _label);
+        // The label is added as a child of the floor icon so it appears
+        // directly next to the floor number.
+        floorIcon.CallDeferred(Node.MethodName.AddChild, _label);
 
-        MainFile.Logger.Info("[EndlessMod] Iteration label attached to NRun.");
+        MainFile.Logger.Info("[EndlessMod] Loop label attached to NTopBarFloorIcon.");
     }
 
     /// <summary>
@@ -81,7 +82,8 @@ public static class IterationLabel
             return;
         }
 
-        // If the label doesn't exist yet (e.g. setting was toggled on mid-run),
+        // If the label doesn't exist yet (e.g. setting was toggled on mid-run,
+        // or CreateAndAttach was called before the floor icon was ready),
         // try to create it now.
         if (_label == null || !GodotObject.IsInstanceValid(_label))
             TryFindExisting();
@@ -111,13 +113,46 @@ public static class IterationLabel
     // -----------------------------------------------------------------------
 
     private static string FormatLabel() =>
-        $"Iteration: {EndlessState.IterationCount}";
+        $"(loop: {EndlessState.IterationCount})";
+
+    private static NTopBarFloorIcon? GetFloorIcon()
+    {
+        var run = NRun.Instance;
+        if (run == null)
+        {
+            MainFile.Logger.Warn("[EndlessMod] NRun.Instance is null – cannot locate floor icon.");
+            return null;
+        }
+
+        var globalUi = run.GlobalUi;
+        if (globalUi == null)
+        {
+            MainFile.Logger.Warn("[EndlessMod] NRun.GlobalUi is null – cannot locate floor icon.");
+            return null;
+        }
+
+        var topBar = globalUi.TopBar;
+        if (topBar == null)
+        {
+            MainFile.Logger.Warn("[EndlessMod] NGlobalUi.TopBar is null – cannot locate floor icon.");
+            return null;
+        }
+
+        return topBar.FloorIcon;
+    }
 
     private static void TryFindExisting()
     {
+        var floorIcon = GetFloorIcon();
+        if (floorIcon != null)
+        {
+            _label = floorIcon.FindChild(LabelNodeName, true, false) as Label;
+            if (_label != null) return;
+        }
+
+        // Fallback: search the entire run scene tree.
         var runRoot = NRun.Instance;
         if (runRoot == null) return;
-
         _label = runRoot.FindChild(LabelNodeName, true, false) as Label;
     }
 }
