@@ -43,7 +43,7 @@ internal static class MultiplayerSyncPatch
 
     private static void OnActEntered()
     {
-        var state = RunManager.Instance.DebugOnlyGetState();
+        var state = EndlessState.CurrentRun;
         if (state == null)
         {
             _previousActIndex = -1;

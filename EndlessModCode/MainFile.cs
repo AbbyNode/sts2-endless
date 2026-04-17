@@ -41,9 +41,9 @@ public partial class MainFile : Node
         Logger.Info("Endless Runs mod initialised.");
     }
 
-    private static void OnRunStarted(RunState _)
+    private static void OnRunStarted(RunState runState)
     {
-        EndlessState.Reset();
+        EndlessState.Reset(runState);
         Logger.Info("New run started – endless state reset.");
         // Create the iteration HUD label for this run.
         IterationLabel.CreateAndAttach();

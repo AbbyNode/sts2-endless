@@ -57,7 +57,7 @@ internal static class EndlessLoopPatches
         // ReSharper disable once InconsistentNaming
         private static bool Prefix(RunManager __instance, ref Task __result)
         {
-            var state = __instance.DebugOnlyGetState();
+            var state = EndlessState.CurrentRun;
             if (state == null)
                 return true; // no run active; let original run
 
@@ -139,7 +139,7 @@ internal static class EndlessLoopPatches
             if (room.RoomType != RoomType.Boss)
                 return true;
 
-            var state = RunManager.Instance.DebugOnlyGetState();
+            var state = EndlessState.CurrentRun;
             if (state == null)
                 return true;
 
@@ -241,7 +241,7 @@ internal static class EndlessLoopPatches
         {
             // Record which bosses the player just fought (before rooms are
             // regenerated) so we can avoid repeating them in act 1.
-            var state = runManager.DebugOnlyGetState();
+            var state = EndlessState.CurrentRun;
             if (state != null)
                 EndlessState.RecordBossesFromActs(state.Acts);
 
@@ -249,7 +249,7 @@ internal static class EndlessLoopPatches
 
             // Offer boss-style rewards (relic + card choice + gold) to every
             // player before the act transition so progression feels seamless.
-            await OfferBossRewards(runManager);
+            await OfferBossRewards();
 
             // Regenerate fresh encounters for all acts so the second (and
             // subsequent) passes feel different from the first.
@@ -334,9 +334,9 @@ internal static class EndlessLoopPatches
     /// Errors are logged and swallowed so that a failure here never prevents
     /// the run from looping back.
     /// </summary>
-    private static async Task OfferBossRewards(RunManager runManager)
+    private static async Task OfferBossRewards()
     {
-        var state = runManager.DebugOnlyGetState();
+        var state = EndlessState.CurrentRun;
         if (state == null)
             return;
 
