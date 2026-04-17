@@ -125,6 +125,39 @@ internal static class EndlessLoopPatches
     }
 
     // -----------------------------------------------------------------------
+    //  Patch 3 – OfferForRoomEnd (skip complimentary 1-gold terminal reward)
+    // -----------------------------------------------------------------------
+
+    [HarmonyPatch(typeof(RewardsCmd), nameof(RewardsCmd.OfferForRoomEnd))]
+    private static class SkipTerminalRewardPatch
+    {
+        [HarmonyPrefix]
+        // ReSharper disable once InconsistentNaming
+        private static bool Prefix(AbstractRoom room, ref Task __result)
+        {
+            // Only interested in the boss room of the final act.
+            if (room.RoomType != RoomType.Boss)
+                return true;
+
+            var state = RunManager.Instance.DebugOnlyGetState();
+            if (state == null)
+                return true;
+
+            bool isLastAct = state.CurrentActIndex >= state.Acts.Count - 1;
+            if (!isLastAct)
+                return true;
+
+            // Skip the base game's complimentary 1-gold reward for the
+            // final boss – the mod offers a full boss-reward screen in
+            // DoEndlessLoop instead.
+            MainFile.Logger.Info(
+                "[EndlessMod] Skipping base-game terminal reward for final act boss.");
+            __result = Task.CompletedTask;
+            return false;
+        }
+    }
+
+    // -----------------------------------------------------------------------
     //  Dialog + act-advance logic (runs after iteration 1)
     // -----------------------------------------------------------------------
 
