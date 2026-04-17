@@ -81,7 +81,7 @@ internal static class MonsterHpScalingHelper
             try
             {
                 int baseMaxHp = (int)CreatureMaxHpField.GetValue(creature)!;
-                int scaledMaxHp = baseMaxHp * iteration;
+                int scaledMaxHp = (int)Math.Round(baseMaxHp * iteration * EndlessModConfig.HpScaleMultiplier);
 
                 // Set both max and current HP so the creature starts at
                 // full (scaled) health.
@@ -99,7 +99,7 @@ internal static class MonsterHpScalingHelper
         if (scaled > 0)
         {
             MainFile.Logger.Info(
-                $"[EndlessMod] Scaled {scaled} enemy creature(s) HP ×{iteration}.");
+                $"[EndlessMod] Scaled {scaled} enemy creature(s) HP ×{iteration} (multiplier {EndlessModConfig.HpScaleMultiplier:F1}).");
         }
     }
 }

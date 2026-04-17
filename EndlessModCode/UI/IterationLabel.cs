@@ -34,6 +34,10 @@ public static class IterationLabel
         // Remove any stale instance from a previous run.
         Detach();
 
+        // Respect the user's "show iteration count" setting.
+        if (!EndlessModConfig.ShowIterationCount)
+            return;
+
         var runRoot = NRun.Instance;
         if (runRoot == null)
         {
@@ -70,11 +74,25 @@ public static class IterationLabel
     /// </summary>
     internal static void Refresh()
     {
+        // If the setting was toggled off, remove any existing label.
+        if (!EndlessModConfig.ShowIterationCount)
+        {
+            Detach();
+            return;
+        }
+
+        // If the label doesn't exist yet (e.g. setting was toggled on mid-run),
+        // try to create it now.
         if (_label == null || !GodotObject.IsInstanceValid(_label))
             TryFindExisting();
 
-        if (_label != null && GodotObject.IsInstanceValid(_label))
-            _label.Text = FormatLabel();
+        if (_label == null || !GodotObject.IsInstanceValid(_label))
+        {
+            CreateAndAttach();
+            return;
+        }
+
+        _label.Text = FormatLabel();
     }
 
     /// <summary>
