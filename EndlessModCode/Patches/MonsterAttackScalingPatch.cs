@@ -35,7 +35,7 @@ internal static class MonsterAttackScalingPatch
         if (!owner.IsMonster)
             return; // only scale enemy attacks
 
-        double scaleFactor = 1.0 + 0.2 * (iteration - 1);
+        double scaleFactor = 1.0 + EndlessModConfig.AttackDamageScaleMultiplier * (iteration - 1);
         __result = (int)Math.Round(__result * scaleFactor);
     }
 }
