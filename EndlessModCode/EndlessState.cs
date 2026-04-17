@@ -15,6 +15,13 @@ public static class EndlessState
 {
     private const int MaxRecentBosses = 3;
 
+    /// <summary>
+    /// The active <see cref="RunState"/> for the current run, set when the
+    /// run starts.  Caching this avoids calling
+    /// <c>RunManager.DebugOnlyGetState()</c> from every patch.
+    /// </summary>
+    public static RunState? CurrentRun { get; private set; }
+
     /// <summary>Current loop number (1 = first pass through the acts).</summary>
     public static int IterationCount { get; private set; } = 1;
 
@@ -58,8 +65,9 @@ public static class EndlessState
     public static bool IsRecentBoss(ModelId encounterId) => _recentBossIds.Contains(encounterId);
 
     /// <summary>Reset back to the first iteration (called when a new run starts).</summary>
-    public static void Reset()
+    public static void Reset(RunState runState)
     {
+        CurrentRun = runState ?? throw new ArgumentNullException(nameof(runState));
         IterationCount = 1;
         _recentBossIds.Clear();
     }
