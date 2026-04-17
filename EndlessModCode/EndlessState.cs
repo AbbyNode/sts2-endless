@@ -17,7 +17,7 @@ public static class EndlessState
 
     /// <summary>
     /// The active <see cref="RunState"/> for the current run, set when the
-    /// run starts and cleared when it resets.  Caching this avoids calling
+    /// run starts.  Caching this avoids calling
     /// <c>RunManager.DebugOnlyGetState()</c> from every patch.
     /// </summary>
     public static RunState? CurrentRun { get; private set; }
@@ -67,7 +67,7 @@ public static class EndlessState
     /// <summary>Reset back to the first iteration (called when a new run starts).</summary>
     public static void Reset(RunState runState)
     {
-        CurrentRun = runState;
+        CurrentRun = runState ?? throw new ArgumentNullException(nameof(runState));
         IterationCount = 1;
         _recentBossIds.Clear();
     }
