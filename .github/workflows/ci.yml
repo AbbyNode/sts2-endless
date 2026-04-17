@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache .NET SDK
+        uses: actions/cache@v4
+        with:
+          path: ~/.dotnet
+          key: dotnet-sdk-9.0.x-${{ runner.os }}
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        env:
+          DOTNET_INSTALL_DIR: ~/.dotnet
+        with:
+          dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot_dir
+          key: godot-4.5.1-stable-mono-linux-x86_64
+
+      - name: Download Godot 4.5.1 mono
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          wget -q "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_x86_64.zip" -O godot.zip
+          unzip -q godot.zip -d godot_dir
+
+      - name: Setup Godot binary path
+        run: |
+          GODOT_BIN=$(find godot_dir -type f -name "*.x86_64" | head -1)
+          chmod +x "$GODOT_BIN"
+          echo "GODOT_BIN=$(realpath "$GODOT_BIN")" >> $GITHUB_ENV
+
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      - name: Build mod
+        run: |
+          mkdir -p /tmp/mods/EndlessMod
+          dotnet publish -c Release \
+            /p:ModsPath=/tmp/mods/ \
+            /p:GodotPath="$GODOT_BIN"
