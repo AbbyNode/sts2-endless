@@ -28,6 +28,9 @@ A Slay the Spire 2 mod that enables truly endless runs.
 - **Multiplayer compatible** – all connected players must have the mod
   installed.  The game's built-in act-change synchronisation keeps every
   client in step; the iteration counter is kept consistent automatically.
+- **Configurable settings** – adjust the HP scale multiplier, attack damage
+  scale multiplier, and iteration-count HUD visibility through the in-game
+  mod-settings screen (powered by BaseLib).
 
 ## Requirements
 
@@ -53,5 +56,6 @@ A Slay the Spire 2 mod that enables truly endless runs.
 | Attack scaling | `EndlessModCode/Patches/MonsterAttackScalingPatch.cs` | Scales enemy attack damage by +20% per iteration |
 | Act display | `EndlessModCode/Patches/ActDisplayPatch.cs` | Offsets act numbers so they continue across loops |
 | MP sync | `EndlessModCode/Patches/MultiplayerSyncPatch.cs` | Syncs iteration counter on client peers |
+| Settings | `EndlessModCode/EndlessModConfig.cs` | BaseLib `SimpleModConfig` exposing HP/attack multipliers and HUD toggle |
 | HUD label | `EndlessModCode/UI/IterationLabel.cs` | Godot Label showing current iteration |
 | End-campaign dialog | `EndlessModCode/UI/EndCampaignDialog.cs` | Modal overlay letting the player continue or end the run |

@@ -1,4 +1,5 @@
 using System.Reflection;
+using BaseLib.Config;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Modding;
@@ -33,6 +34,9 @@ public partial class MainFile : Node
 
         // Register the multiplayer sync hook that fires on every ActEntered.
         MultiplayerSyncPatch.Register();
+
+        // Register mod settings with the BaseLib config system.
+        ModConfigRegistry.Register(ModId, new EndlessModConfig());
 
         Logger.Info("Endless Runs mod initialised.");
     }
