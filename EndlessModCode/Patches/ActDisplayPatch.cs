@@ -1,7 +1,6 @@
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Runs;
 
 namespace EndlessMod.EndlessModCode.Patches;
 
@@ -28,7 +27,7 @@ internal static class ActDisplayPatch
         if (iteration <= 1)
             return; // first pass – no offset needed
 
-        var state = RunManager.Instance?.DebugOnlyGetState();
+        var state = EndlessState.CurrentRun;
         if (state == null)
             return;
 
