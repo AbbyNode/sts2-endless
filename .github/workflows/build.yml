@@ -39,19 +39,24 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: '**/*.csproj'
 
-      - name: Cache NuGet packages
+      - name: Cache Godot
+        id: cache-godot
         uses: actions/cache@v4
         with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+          path: godot_dir
+          key: godot-4.5.1-stable-mono-linux-x86_64
 
       - name: Download Godot 4.5.1 mono
+        if: steps.cache-godot.outputs.cache-hit != 'true'
         run: |
           wget -q "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_x86_64.zip" -O godot.zip
           unzip -q godot.zip -d godot_dir
+
+      - name: Setup Godot binary path
+        run: |
           GODOT_BIN=$(find godot_dir -type f -name "*.x86_64" | head -1)
           chmod +x "$GODOT_BIN"
           echo "GODOT_BIN=$(realpath "$GODOT_BIN")" >> $GITHUB_ENV
