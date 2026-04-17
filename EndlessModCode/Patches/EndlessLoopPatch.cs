@@ -1,6 +1,7 @@
 using System.Reflection;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -125,7 +126,7 @@ internal static class EndlessLoopPatches
     }
 
     // -----------------------------------------------------------------------
-    //  Patch 3 – OfferForRoomEnd (skip complimentary 1-gold terminal reward)
+    //  Patch 3 – OfferForRoomEnd (replace 1-gold terminal reward with boss rewards)
     // -----------------------------------------------------------------------
 
     [HarmonyPatch(typeof(RewardsCmd), nameof(RewardsCmd.OfferForRoomEnd))]
@@ -133,7 +134,7 @@ internal static class EndlessLoopPatches
     {
         [HarmonyPrefix]
         // ReSharper disable once InconsistentNaming
-        private static bool Prefix(AbstractRoom room, ref Task __result)
+        private static bool Prefix(Player player, AbstractRoom room, ref Task __result)
         {
             // Only interested in the boss room of the final act.
             if (room.RoomType != RoomType.Boss)
@@ -147,12 +148,23 @@ internal static class EndlessLoopPatches
             if (!isLastAct)
                 return true;
 
-            // Skip the base game's complimentary 1-gold reward for the
-            // final boss – the mod offers a full boss-reward screen in
-            // DoEndlessLoop instead.
+            // Replace the base game's complimentary 1-gold reward with
+            // boss-style rewards (relic + card choice + gold).  We must
+            // still show a reward screen so the game's internal flow
+            // proceeds normally after the player collects the rewards.
+            var rewards = new List<Reward>
+            {
+                new RelicReward(player),
+                new CardReward(
+                    CardCreationOptions.ForRoom(player, RoomType.Boss),
+                    BossCardChoiceCount,
+                    player),
+                new GoldReward(BossGoldMin, BossGoldMax, player),
+            };
+
             MainFile.Logger.Info(
-                "[EndlessMod] Skipping base-game terminal reward for final act boss.");
-            __result = Task.CompletedTask;
+                "[EndlessMod] Replacing terminal reward with boss rewards for final act boss.");
+            __result = RewardsCmd.OfferCustom(player, rewards);
             return false;
         }
     }
@@ -247,9 +259,9 @@ internal static class EndlessLoopPatches
 
             EndlessState.IncrementIteration();
 
-            // Offer boss-style rewards (relic + card choice + gold) to every
-            // player before the act transition so progression feels seamless.
-            await OfferBossRewards();
+            // Boss-style rewards (relic + card choice + gold) are already
+            // shown by the SkipTerminalRewardPatch which replaces the
+            // base game's 1-gold terminal reward for the final act boss.
 
             // Regenerate fresh encounters for all acts so the second (and
             // subsequent) passes feel different from the first.
@@ -322,48 +334,4 @@ internal static class EndlessLoopPatches
             $"[EndlessMod] Act 1 boss replaced: {previousBossId} was recently fought; using {chosen.Id} instead.");
     }
 
-    // -----------------------------------------------------------------------
-    //  Boss reward helper
-    // -----------------------------------------------------------------------
-
-    /// <summary>
-    /// Presents boss-style rewards (relic, card choice, and gold) to each
-    /// player.  This mirrors the reward screen shown after the act 2 boss so
-    /// the transition to the next loop feels rewarding rather than abrupt.
-    ///
-    /// Errors are logged and swallowed so that a failure here never prevents
-    /// the run from looping back.
-    /// </summary>
-    private static async Task OfferBossRewards()
-    {
-        var state = EndlessState.CurrentRun;
-        if (state == null)
-            return;
-
-        foreach (var player in state.Players)
-        {
-            try
-            {
-                var rewards = new List<Reward>
-                {
-                    new RelicReward(player),
-                    new CardReward(
-                        CardCreationOptions.ForRoom(player, RoomType.Boss),
-                        BossCardChoiceCount,
-                        player),
-                    new GoldReward(BossGoldMin, BossGoldMax, player),
-                };
-
-                await RewardsCmd.OfferCustom(player, rewards);
-
-                MainFile.Logger.Info(
-                    $"[EndlessMod] Boss rewards offered to player {player}.");
-            }
-            catch (Exception ex)
-            {
-                MainFile.Logger.Error(
-                    $"[EndlessMod] Failed to offer boss rewards: {ex.Message}");
-            }
-        }
-    }
 }
